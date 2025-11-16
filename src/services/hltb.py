@@ -1,5 +1,6 @@
 from typing import Any, Callable, Dict
 
+from fastapi import status
 from howlongtobeatpy import HowLongToBeat, HowLongToBeatEntry
 
 from utils.custom_errors import HTTPError
@@ -33,7 +34,10 @@ class HltbService:
             },
         }
         if mode not in mappers:
-            raise HTTPError(status_code=400, message=f"Unknown mode '{mode}'")
+            raise HTTPError(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message=f"Unknown mode '{mode}'",
+            )
         return mappers[mode]
 
     def parseTime(self: HltbService, time: str):
@@ -88,15 +92,17 @@ class HltbService:
         try:
             map_options = self.getMapper("options")
             return list(map(map_options, await self.service.async_search(name)))
-        except:
+        except Exception as _:
             return []
 
     async def getInfo(self: HltbService, id: str):
         try:
             map_info = self.getMapper("info")
             return self.parseData(map_info(await self.service.async_search_from_id(id)))
-        except:
-            raise HTTPError(status_code=404, message="Game not found")
+        except Exception as _:
+            raise HTTPError(
+                status_code=status.HTTP_404_NOT_FOUND, message="Game not found"
+            )
 
     async def handle(self: HltbService, method: str, query: dict):
         methodMap: Dict[str, Callable] = {
@@ -106,14 +112,16 @@ class HltbService:
 
         if method not in methodMap:
             raise HTTPError(
-                status_code=400, message="Invalid endpoint! Use /[options|info]"
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Invalid endpoint! Use /[options|info]",
             )
 
         try:
             param = query["name" if method == "options" else "id"]
-        except:
+        except Exception as _:
             raise HTTPError(
-                status_code=400, message=f"Missing parameter for the {method} endpoint"
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message=f"Missing parameter for the {method} endpoint",
             )
 
         return await methodMap[method](param)

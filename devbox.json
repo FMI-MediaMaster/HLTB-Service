@@ -1,19 +1,28 @@
 {
   "packages": [
     "uv@0.9.7",
-    "python312Packages.uvicorn@0.35.0",
-    "ruff@0.14.4",
-    "bruno@2.14.2"
+    "bruno@2.14.2",
+    "fixjson@1.1.2-unstable-2021-01-05"
   ],
   "shell": {
+    "init_hook": [
+      "if ! diff -q <(fixjson devbox.json) devbox.json >/dev/null 2>&1; then fixjson -w devbox.json; fi",
+      "uv sync",
+      "export SERVICE_NAME=$(basename -s .git \"$(git config --get remote.origin.url)\" | tr '[:upper:]' '[:lower:]')"
+    ],
     "scripts": {
       "bruno": "nohup bruno >/dev/null 2>&1 &",
       "start": "PY_ENV=production uv run src/app.py",
-      "dev":   "PY_ENV=development uv run src/app.py",
-      "test":  "PY_ENV=test uv run pytest tests",
-      "lint":  "ruff check src/ tests/",
-      "lint:fix": "ruff check src/ tests/ --fix",
-      "format": "ruff format src/ tests/"
+      "dev": "PY_ENV=development uv run src/app.py",
+      "test": "PY_ENV=test uv run pytest tests",
+      "lint": "uvx ruff check src/ tests/",
+      "lint:fix": "uvx ruff check src/ tests/ --fix",
+      "format": "uvx ruff format src/ tests/",
+      "docker:build": "docker build -t $SERVICE_NAME .",
+      "docker:pull": "docker pull ghcr.io/fmi-mediamaster/$SERVICE_NAME:latest",
+      "docker:run:local": "ENV_FILE=\"$(pwd)/.env\" && source \"$ENV_FILE\" && docker run -d --rm -v \"$ENV_FILE:/app/.env\" -p $PORT:$PORT --name $SERVICE_NAME $SERVICE_NAME",
+      "docker:run": "ENV_FILE=\"$(pwd)/.env\" && source \"$ENV_FILE\" && docker run -d --rm -v \"$ENV_FILE:/app/.env\" -p $PORT:$PORT --name $SERVICE_NAME ghcr.io/fmi-mediamaster/$SERVICE_NAME:latest",
+      "docker:stop": "docker stop $SERVICE_NAME"
     }
   }
 }

@@ -1,4 +1,4 @@
-from fastapi import Request
+from fastapi import Request, status
 from fastapi.responses import JSONResponse
 
 from utils.custom_errors import HTTPError
@@ -14,6 +14,6 @@ async def error_handler(request: Request, call_next):
         )
     except Exception:
         return JSONResponse(
-            status_code=500,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"error": "Internal server error"},
         )
