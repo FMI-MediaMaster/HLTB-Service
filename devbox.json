@@ -14,7 +14,7 @@
       "bruno": "nohup bruno >/dev/null 2>&1 &",
       "start": "PY_ENV=production uv run src/app.py",
       "dev": "PY_ENV=development uv run src/app.py",
-      "test": "PY_ENV=test uv run pytest tests",
+      "test": "PY_ENV=test uv run pytest -v tests",
       "lint": "uvx ruff check src/ tests/",
       "lint:fix": "uvx ruff check src/ tests/ --fix",
       "format": "uvx ruff format src/ tests/",

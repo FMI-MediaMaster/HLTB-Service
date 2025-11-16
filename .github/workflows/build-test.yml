@@ -70,5 +70,5 @@ jobs:
       - name: Test server
         if: steps.check_tests.outputs.run_tests == 'true'
         shell: bash
-        run: PY_ENV=test uv run pytest tests
+        run: PY_ENV=test uv run pytest -v tests
 
