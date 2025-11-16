@@ -13,6 +13,7 @@ Fields = Dict[str, Dict[str, str]]
 
 
 fields: Dict
+tests: Dict
 
 
 def checkFields(method: str, item: Dict):
@@ -36,8 +37,10 @@ def checkFields(method: str, item: Dict):
         if not props.get("empty", False):
             assert value is not None, f"{key} must not be None"
 
+
 def capitalize(s: str) -> str:
     return s if not s else s[0].upper() + s[1:]
+
 
 def test_valid_item(client, endpoint, queryParameter, item):
     queryType = endpoint.split("/")[-1]
@@ -57,9 +60,10 @@ def test_valid_item(client, endpoint, queryParameter, item):
         for it in body:
             checkFields(queryType, it)
 
+
 def test_nonexistent_item(client, mediaType, endpoint, queryParameter, item):
     queryType = endpoint.split("/")[-1]
-    
+
     response = client.get(endpoint, params={queryParameter: item})
     body = response.json()
 
@@ -73,13 +77,14 @@ def test_nonexistent_item(client, mediaType, endpoint, queryParameter, item):
         assert isinstance(body, list)
         assert len(body) == 0
 
+
 def test_invalid_query(client, endpoint, invalidQuery):
     response = client.get(endpoint, params={invalidQuery: ""})
     assert response.status_code == 400
 
     body = response.json()
     assert "error" in body
-    
+
     queryType = endpoint.split("/")[-1]
     assert body["error"] == f"Missing parameter for the {queryType} endpoint"
 
@@ -94,15 +99,17 @@ def test_invalid_endpoint(client, endpoint):
     queryType = endpoint.split("/")[-1]
     assert body["error"] == f"Missing parameter for the {queryType} endpoint"
 
+
 def generateMetadataTests(
     endpoint: str,
     fieldsMap: Dict[str, Dict[str, dict]],
     validMap: Dict[str, str],
-    invalidMap: Dict[str, str]
+    invalidMap: Dict[str, str],
 ):
     global fields
-    fields = fieldsMap
+    global tests
 
+    fields = fieldsMap
     first = next(iter(validMap.items()))
 
     def destroyQuery(method: str, key: str, value: str) -> str:
@@ -137,7 +144,7 @@ def generateMetadataTests(
     }
 
     validMethods = fieldsMap.keys()
-    return {
+    tests = {
         method: {
             "endpoint": f"{endpoint}/{method}",
             "queryParameter": queryParameterMap[method],
@@ -148,6 +155,7 @@ def generateMetadataTests(
         for method, params in testsMap.items()
         if method in validMethods
     }
+
 
 # Generate pytests
 def pytest_generate_tests(metafunc):
@@ -167,7 +175,7 @@ def pytest_generate_tests(metafunc):
             for data in tests.values()
             for item in data["nonExistentItems"]
         ]
-        
+
         ids = [f"endpoint={ep}&{qp}={item}" for ep, qp, item in combinations]
         metafunc.parametrize("endpoint,queryParameter,item", combinations, ids=ids)
 
@@ -182,10 +190,7 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize("endpoint,invalidQuery", combinations, ids=ids)
 
     elif metafunc.function.__name__ == "test_invalid_endpoint":
-        combinations = [
-            (data["endpoint"])
-            for data in tests.values()
-        ]
+        combinations = [(data["endpoint"]) for data in tests.values()]
 
         ids = [f"endpoint={ep}" for ep in combinations]
         metafunc.parametrize("endpoint", combinations, ids=ids)
