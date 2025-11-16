@@ -105,11 +105,15 @@ class HltbService:
         }
 
         if method not in methodMap:
-            raise HTTPError(status_code=400, message="Invalid endpoint! Use /[options|info]")
+            raise HTTPError(
+                status_code=400, message="Invalid endpoint! Use /[options|info]"
+            )
 
         try:
             param = query["name" if method == "options" else "id"]
         except:
-            raise HTTPError(status_code=400, message=f"Missing parameter for the {method} endpoint")
+            raise HTTPError(
+                status_code=400, message=f"Missing parameter for the {method} endpoint"
+            )
 
         return await methodMap[method](param)
