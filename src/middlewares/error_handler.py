@@ -1,16 +1,16 @@
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
-from utils.validation_error import ValidationError
+from utils.custom_errors import HTTPError
 
 
 async def error_handler(request: Request, call_next):
     try:
         return await call_next(request)
-    except ValidationError as e:
+    except HTTPError as e:
         return JSONResponse(
-            status_code=400,
-            content={"error": str(e)},
+            status_code=e.status_code,
+            content=e.content,
         )
     except Exception:
         return JSONResponse(

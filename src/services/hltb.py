@@ -2,7 +2,7 @@ from typing import Any, Callable, Dict
 
 from howlongtobeatpy import HowLongToBeat, HowLongToBeatEntry
 
-from utils.validation_error import ValidationError
+from utils.custom_errors import HTTPError
 
 Mapper = Callable[[HowLongToBeatEntry], Dict[str, Any]]
 
@@ -13,11 +13,11 @@ class HltbService:
     def __init__(self: HltbService):
         self.service = HowLongToBeat()
 
-    def get_mapper(self: HltbService, mode: str):
+    def getMapper(self: HltbService, mode: str):
         mappers: Dict[str, Mapper] = {
             "options": lambda entry: {
                 "name": entry.game_name,
-                "id": entry.game_id,
+                "id": str(entry.game_id),
             },
             "info": lambda entry: {
                 "name": entry.game_name,
@@ -33,7 +33,7 @@ class HltbService:
             },
         }
         if mode not in mappers:
-            raise ValidationError(f"Unknown mode '{mode}'")
+            raise HTTPError(status_code=400, message=f"Unknown mode '{mode}'")
         return mappers[mode]
 
     def parseTime(self: HltbService, time: str):
@@ -58,6 +58,7 @@ class HltbService:
             "completionist": self.parseTime(info.get("completionist", None)),
             "coop": self.parseTime(info.get("coop", None)),
             "multiplayer": self.parseTime(info.get("multiplayer", None)),
+            "singleplayer": None,
         }
 
         if not info.get("show_coop", False):
@@ -85,17 +86,17 @@ class HltbService:
 
     async def getOptions(self: HltbService, name: str):
         try:
-            map_options = self.get_mapper("options")
+            map_options = self.getMapper("options")
             return list(map(map_options, await self.service.async_search(name)))
         except:
             return []
 
     async def getInfo(self: HltbService, id: str):
         try:
-            map_info = self.get_mapper("info")
+            map_info = self.getMapper("info")
             return self.parseData(map_info(await self.service.async_search_from_id(id)))
         except:
-            return {}
+            raise HTTPError(status_code=404, message="Game not found")
 
     async def handle(self: HltbService, method: str, query: dict):
         methodMap: Dict[str, Callable] = {
@@ -104,11 +105,11 @@ class HltbService:
         }
 
         if method not in methodMap:
-            raise ValidationError("Invalid endpoint! Use /[options|info]")
+            raise HTTPError(status_code=400, message="Invalid endpoint! Use /[options|info]")
 
         try:
             param = query["name" if method == "options" else "id"]
         except:
-            raise ValidationError(f"Missing parameter for the {method} endpoint")
+            raise HTTPError(status_code=400, message=f"Missing parameter for the {method} endpoint")
 
         return await methodMap[method](param)
