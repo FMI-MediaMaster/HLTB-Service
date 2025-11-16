@@ -1,0 +1,20 @@
+meta {
+  name: Get Info
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{url}}/info?id=26286
+  body: none
+  auth: inherit
+}
+
+params:query {
+  id: 26286
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

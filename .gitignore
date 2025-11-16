@@ -1,0 +1,5 @@
+.devbox
+.env
+__pycache__/
+*.py[codz]
+*$py.class

@@ -1,0 +1,14 @@
+{
+  "packages": [
+    "uv@0.9.7",
+    "python312Packages.uvicorn@0.35.0",
+    "bruno@latest"
+  ],
+  "shell": {
+    "scripts": {
+      "bruno": "nohup bruno >/dev/null 2>&1 &",
+      "start": "PY_ENV=production uv run src/app.py",
+      "dev": "PY_ENV=development uv run src/app.py"
+    }
+  }
+}
