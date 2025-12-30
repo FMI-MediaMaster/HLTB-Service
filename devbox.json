@@ -1,8 +1,8 @@
 {
   "packages": [
     "uv@0.9.7",
-    "bruno@2.14.2",
-    "fixjson@1.1.2-unstable-2021-01-05"
+    "fixjson@1.1.2-unstable-2021-01-05",
+    "bruno@2.12.0"
   ],
   "shell": {
     "init_hook": [
