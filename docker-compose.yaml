@@ -1,0 +1,17 @@
+services:
+  hltb-service:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: hltb-service:latest
+    hostname: hltb-service.mediamaster.internal
+    container_name: hltb-service.mediamaster.internal
+    volumes:
+      - ./.env:/app/.env:ro
+    networks:
+      - mediamaster-internal-network
+
+networks:
+  mediamaster-internal-network:
+    name: mediamaster-internal-network
